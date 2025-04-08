@@ -108,7 +108,7 @@ public class GameManagerTTS : MonoBehaviour
         Debug.Log("[GameManagerTTS] Dando instrucciones iniciales");
 
         // Reproducir instrucciones mediante TTS
-        string instrucciones = $"He elegido un número entre {numeroMinimo} y {numeroMaximo}. Tienes {intentosMaximos} intentos para adivinarlo. Dime un número.";
+        string instrucciones = $"He elegido un numero entre {numeroMinimo} y {numeroMaximo}. Tienes {intentosMaximos} intentos para adivinarlo. Dime un numero.";
 
         if (ttsPrepared)
         {
@@ -123,7 +123,7 @@ public class GameManagerTTS : MonoBehaviour
         else
         {
             Debug.LogWarning("[GameManagerTTS] TTS no preparado, simulando espera");
-            yield return new WaitForSeconds(3f);
+            yield return new WaitForSeconds(1f);
         }
 
         yield return new WaitForSeconds(tiempoEsperaEntreMensajes);
@@ -199,7 +199,7 @@ public class GameManagerTTS : MonoBehaviour
 
         if (ttsPrepared)
         {
-            TTSManager.Instance.Speak($"Solo son válidos números entre {numeroMinimo} y {numeroMaximo}");
+            TTSManager.Instance.Speak($"Solo son válidos numeros entre {numeroMinimo} y {numeroMaximo}");
 
             // Esperar a que termine de hablar
             while (TTSManager.Instance.IsSpeaking())
@@ -221,7 +221,7 @@ public class GameManagerTTS : MonoBehaviour
 
         if (ttsPrepared)
         {
-            TTSManager.Instance.Speak("Ese número ya lo has dicho");
+            TTSManager.Instance.Speak("Ese numero ya lo has dicho");
 
             // Esperar a que termine de hablar
             while (TTSManager.Instance.IsSpeaking())
@@ -243,7 +243,7 @@ public class GameManagerTTS : MonoBehaviour
 
         if (ttsPrepared)
         {
-            TTSManager.Instance.Speak($"No he entendido. Por favor, dime un número del {numeroMinimo} al {numeroMaximo}");
+            TTSManager.Instance.Speak($"No he entendido. Por favor, dime un numero del {numeroMinimo} al {numeroMaximo}");
 
             // Esperar a que termine de hablar
             while (TTSManager.Instance.IsSpeaking())
@@ -293,7 +293,7 @@ public class GameManagerTTS : MonoBehaviour
 
         if (ttsPrepared)
         {
-            TTSManager.Instance.Speak($"¡Correcto! Has adivinado el número {numeroSecreto}.");
+            TTSManager.Instance.Speak($"¡Correcto! Has adivinado el numero {numeroSecreto}.");
 
             // Esperar a que termine de hablar
             while (TTSManager.Instance.IsSpeaking())
@@ -315,7 +315,7 @@ public class GameManagerTTS : MonoBehaviour
 
         if (ttsPrepared)
         {
-            TTSManager.Instance.Speak($"Has agotado tus intentos. El número era {numeroSecreto}.");
+            TTSManager.Instance.Speak($"Has agotado tus intentos. El numero era {numeroSecreto}.");
 
             // Esperar a que termine de hablar
             while (TTSManager.Instance.IsSpeaking())
@@ -378,7 +378,7 @@ public class GameManagerTTS : MonoBehaviour
 
         if (ttsPrepared)
         {
-            TTSManager.Instance.Speak("¿Quieres jugar otra vez? Responde Sí o No.");
+            TTSManager.Instance.Speak("¿Quieres jugar otra vez? Responde Si o No.");
 
             // Esperar a que termine de hablar
             while (TTSManager.Instance.IsSpeaking())
