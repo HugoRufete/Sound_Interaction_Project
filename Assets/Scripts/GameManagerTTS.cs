@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement; // Para reiniciar la escena
+using UnityEngine.Windows.Speech;
 
 public class GameManagerTTS : MonoBehaviour
 {
@@ -12,6 +14,7 @@ public class GameManagerTTS : MonoBehaviour
 
     [Header("Ajustes de Debug")]
     [SerializeField] private bool mostrarNumeroSecreto = true;
+    [SerializeField] private bool reiniciarEscenaEnNuevoJuego = true; // Opción para reiniciar escena en lugar de solo la lógica
 
     // Variables del juego
     private int numeroSecreto;
@@ -23,8 +26,24 @@ public class GameManagerTTS : MonoBehaviour
     // Referencia al sistema de reconocimiento de voz
     private SpeechRecognitionManager speechRecognition;
 
+    // Para verificar si el TTS está listo
+    private bool ttsPrepared = false;
+
     void Start()
     {
+        Debug.Log("[GameManagerTTS] Iniciando...");
+
+        // Asegurarnos de que el TTSManager está inicializado
+        if (TTSManager.Instance != null)
+        {
+            ttsPrepared = true;
+            Debug.Log("[GameManagerTTS] TTSManager inicializado correctamente");
+        }
+        else
+        {
+            Debug.LogError("[GameManagerTTS] ¡Error! No se pudo inicializar TTSManager");
+        }
+
         // Inicializar el sistema de reconocimiento de voz
         speechRecognition = FindObjectOfType<SpeechRecognitionManager>();
         if (speechRecognition == null)
@@ -32,16 +51,19 @@ public class GameManagerTTS : MonoBehaviour
             // Si no existe, crear uno
             GameObject speechRecObj = new GameObject("SpeechRecognitionManager");
             speechRecognition = speechRecObj.AddComponent<SpeechRecognitionManager>();
+            Debug.Log("[GameManagerTTS] Creando nuevo SpeechRecognitionManager");
+        }
+        else
+        {
+            Debug.Log("[GameManagerTTS] SpeechRecognitionManager encontrado");
         }
 
         // Suscribirse al evento de reconocimiento de voz
         speechRecognition.OnSpeechRecognized += HandleSpeechRecognized;
+        Debug.Log("[GameManagerTTS] Suscrito al evento OnSpeechRecognized");
 
-        // Inicializar el sistema TTS si no existe
-        if (TTSManager.Instance == null)
-        {
-            Debug.LogWarning("TTSManager no encontrado, creando uno nuevo");
-        }
+        // Asegurarse de que no hay reconocimiento activo al iniciar
+        speechRecognition.StopListening();
 
         // Iniciar el juego
         IniciarJuego();
@@ -53,6 +75,7 @@ public class GameManagerTTS : MonoBehaviour
         if (speechRecognition != null)
         {
             speechRecognition.OnSpeechRecognized -= HandleSpeechRecognized;
+            Debug.Log("[GameManagerTTS] Desuscrito del evento OnSpeechRecognized");
         }
     }
 
@@ -67,7 +90,13 @@ public class GameManagerTTS : MonoBehaviour
 
         if (mostrarNumeroSecreto)
         {
-            Debug.Log($"[DEBUG] Numero secreto: {numeroSecreto}");
+            Debug.Log($"[DEBUG] Número secreto: {numeroSecreto}");
+        }
+
+        // Detener cualquier síntesis anterior
+        if (ttsPrepared)
+        {
+            TTSManager.Instance.StopSpeaking();
         }
 
         // Reproducir instrucciones iniciales
@@ -76,36 +105,49 @@ public class GameManagerTTS : MonoBehaviour
 
     private IEnumerator DarInstruccionesIniciales()
     {
-        // Detener cualquier síntesis anterior
-        TTSManager.Instance.StopSpeaking();
+        Debug.Log("[GameManagerTTS] Dando instrucciones iniciales");
 
         // Reproducir instrucciones mediante TTS
-        string instrucciones = $"He elegido un numero entre {numeroMinimo} y {numeroMaximo}. Tienes {intentosMaximos} intentos para adivinarlo. Dime un numero.";
-        TTSManager.Instance.Speak(instrucciones);
+        string instrucciones = $"He elegido un número entre {numeroMinimo} y {numeroMaximo}. Tienes {intentosMaximos} intentos para adivinarlo. Dime un número.";
 
-        // Esperar a que termine de hablar
-        while (TTSManager.Instance.IsSpeaking())
+        if (ttsPrepared)
         {
-            yield return null;
+            TTSManager.Instance.Speak(instrucciones);
+
+            // Esperar a que termine de hablar
+            while (TTSManager.Instance.IsSpeaking())
+            {
+                yield return null;
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[GameManagerTTS] TTS no preparado, simulando espera");
+            yield return new WaitForSeconds(3f);
         }
 
         yield return new WaitForSeconds(tiempoEsperaEntreMensajes);
 
         // Iniciar reconocimiento de voz
+        Debug.Log("[GameManagerTTS] Iniciando reconocimiento de voz después de instrucciones");
         speechRecognition.StartListening();
     }
 
     private void HandleSpeechRecognized(string text)
     {
-        Debug.Log($"Texto reconocido: {text}");
+        Debug.Log($"[GameManagerTTS] Texto reconocido: {text}");
 
-        if (!juegoActivo) return;
+        // Depuración del estado
+        Debug.Log($"[GameManagerTTS] Estado: juegoActivo={juegoActivo}, esperandoRespuestaNuevoJuego={esperandoRespuestaNuevoJuego}");
 
         if (esperandoRespuestaNuevoJuego)
         {
+            Debug.Log($"[GameManagerTTS] Procesando respuesta para nuevo juego: '{text}'");
             ProcesarRespuestaNuevoJuego(text);
             return;
         }
+
+        if (!juegoActivo) return;
 
         // Procesar texto como un intento del jugador
         ProcesarEntradaUsuario(text);
@@ -115,11 +157,14 @@ public class GameManagerTTS : MonoBehaviour
     {
         // Detener reconocimiento mientras procesamos la entrada
         speechRecognition.StopListening();
+        Debug.Log("[GameManagerTTS] Reconocimiento detenido para procesar entrada");
 
         // Intentar extraer un número del texto
         int numeroIntentado;
         if (speechRecognition.TryExtractNumber(texto, out numeroIntentado))
         {
+            Debug.Log($"[GameManagerTTS] Número extraído: {numeroIntentado}");
+
             // Verificar que el número esté en el rango válido
             if (numeroIntentado < numeroMinimo || numeroIntentado > numeroMaximo)
             {
@@ -142,6 +187,7 @@ public class GameManagerTTS : MonoBehaviour
         }
         else
         {
+            Debug.Log("[GameManagerTTS] No se pudo extraer un número del texto");
             // No se reconoció un número
             StartCoroutine(ProcesarTextoNoReconocido());
         }
@@ -149,49 +195,67 @@ public class GameManagerTTS : MonoBehaviour
 
     private IEnumerator ProcesarNumeroInvalido()
     {
-        TTSManager.Instance.Speak($"Solo son válidos numeros entre {numeroMinimo} y {numeroMaximo}");
+        Debug.Log("[GameManagerTTS] Procesando número inválido");
 
-        // Esperar a que termine de hablar
-        while (TTSManager.Instance.IsSpeaking())
+        if (ttsPrepared)
         {
-            yield return null;
+            TTSManager.Instance.Speak($"Solo son válidos números entre {numeroMinimo} y {numeroMaximo}");
+
+            // Esperar a que termine de hablar
+            while (TTSManager.Instance.IsSpeaking())
+            {
+                yield return null;
+            }
         }
 
         yield return new WaitForSeconds(tiempoEsperaEntreMensajes);
 
         // Volver a escuchar
+        Debug.Log("[GameManagerTTS] Reiniciando reconocimiento después de número inválido");
         speechRecognition.StartListening();
     }
 
     private IEnumerator ProcesarNumeroRepetido()
     {
-        TTSManager.Instance.Speak("Ese numero ya lo has dicho");
+        Debug.Log("[GameManagerTTS] Procesando número repetido");
 
-        // Esperar a que termine de hablar
-        while (TTSManager.Instance.IsSpeaking())
+        if (ttsPrepared)
         {
-            yield return null;
+            TTSManager.Instance.Speak("Ese número ya lo has dicho");
+
+            // Esperar a que termine de hablar
+            while (TTSManager.Instance.IsSpeaking())
+            {
+                yield return null;
+            }
         }
 
         yield return new WaitForSeconds(tiempoEsperaEntreMensajes);
 
         // Volver a escuchar
+        Debug.Log("[GameManagerTTS] Reiniciando reconocimiento después de número repetido");
         speechRecognition.StartListening();
     }
 
     private IEnumerator ProcesarTextoNoReconocido()
     {
-        TTSManager.Instance.Speak($"No he entendido. Por favor, dime un numero del {numeroMinimo} al {numeroMaximo}");
+        Debug.Log("[GameManagerTTS] Procesando texto no reconocido como número");
 
-        // Esperar a que termine de hablar
-        while (TTSManager.Instance.IsSpeaking())
+        if (ttsPrepared)
         {
-            yield return null;
+            TTSManager.Instance.Speak($"No he entendido. Por favor, dime un número del {numeroMinimo} al {numeroMaximo}");
+
+            // Esperar a que termine de hablar
+            while (TTSManager.Instance.IsSpeaking())
+            {
+                yield return null;
+            }
         }
 
         yield return new WaitForSeconds(tiempoEsperaEntreMensajes);
 
         // Volver a escuchar
+        Debug.Log("[GameManagerTTS] Reiniciando reconocimiento después de texto no reconocido");
         speechRecognition.StartListening();
     }
 
@@ -199,7 +263,7 @@ public class GameManagerTTS : MonoBehaviour
     {
         intentosRestantes--;
 
-        Debug.Log($"Procesando intento: {numero}, intentos restantes: {intentosRestantes}");
+        Debug.Log($"[GameManagerTTS] Procesando intento: {numero}, intentos restantes: {intentosRestantes}");
 
         if (numero == numeroSecreto)
         {
@@ -225,60 +289,82 @@ public class GameManagerTTS : MonoBehaviour
 
     private IEnumerator ProcesarVictoria()
     {
-        TTSManager.Instance.Speak($"¡Correcto! Has adivinado el numero {numeroSecreto}.");
+        Debug.Log("[GameManagerTTS] Procesando victoria");
 
-        // Esperar a que termine de hablar
-        while (TTSManager.Instance.IsSpeaking())
+        if (ttsPrepared)
         {
-            yield return null;
+            TTSManager.Instance.Speak($"¡Correcto! Has adivinado el número {numeroSecreto}.");
+
+            // Esperar a que termine de hablar
+            while (TTSManager.Instance.IsSpeaking())
+            {
+                yield return null;
+            }
         }
 
         yield return new WaitForSeconds(tiempoEsperaEntreMensajes);
 
         // Preguntar si quiere jugar otra partida
+        Debug.Log("[GameManagerTTS] Preguntando si quiere jugar de nuevo después de victoria");
         PreguntarNuevoJuego();
     }
 
     private IEnumerator ProcesarDerrota()
     {
-        TTSManager.Instance.Speak($"Has agotado tus intentos. El numero era {numeroSecreto}.");
+        Debug.Log("[GameManagerTTS] Procesando derrota");
 
-        // Esperar a que termine de hablar
-        while (TTSManager.Instance.IsSpeaking())
+        if (ttsPrepared)
         {
-            yield return null;
+            TTSManager.Instance.Speak($"Has agotado tus intentos. El número era {numeroSecreto}.");
+
+            // Esperar a que termine de hablar
+            while (TTSManager.Instance.IsSpeaking())
+            {
+                yield return null;
+            }
         }
 
         yield return new WaitForSeconds(tiempoEsperaEntreMensajes);
 
         // Preguntar si quiere jugar otra partida
+        Debug.Log("[GameManagerTTS] Preguntando si quiere jugar de nuevo después de derrota");
         PreguntarNuevoJuego();
     }
 
     private IEnumerator ProcesarMayorMenor(bool esMayor)
     {
         string mensaje = esMayor ? "Mayor" : "Menor";
+        Debug.Log($"[GameManagerTTS] Procesando {mensaje}, intentos restantes: {intentosRestantes}");
 
         // Crear la frase en formato natural
         string textoIntentos = intentosRestantes == 1 ? "intento restante" : "intentos restantes";
-        TTSManager.Instance.Speak($"{mensaje}. Te quedan {intentosRestantes} {textoIntentos}.");
 
-        // Esperar a que termine de hablar
-        while (TTSManager.Instance.IsSpeaking())
+        if (ttsPrepared)
         {
-            yield return null;
+            TTSManager.Instance.Speak($"{mensaje}. Te quedan {intentosRestantes} {textoIntentos}.");
+
+            // Esperar a que termine de hablar
+            while (TTSManager.Instance.IsSpeaking())
+            {
+                yield return null;
+            }
         }
 
         yield return new WaitForSeconds(tiempoEsperaEntreMensajes);
 
         // Volver a escuchar
+        Debug.Log("[GameManagerTTS] Reiniciando reconocimiento después de Mayor/Menor");
         speechRecognition.StartListening();
     }
 
     private void PreguntarNuevoJuego()
     {
+        Debug.Log("[GameManagerTTS] Entrando a PreguntarNuevoJuego()");
+
         juegoActivo = false;
         esperandoRespuestaNuevoJuego = true;
+
+        Debug.Log($"[GameManagerTTS] esperandoRespuestaNuevoJuego establecida a: {esperandoRespuestaNuevoJuego}");
 
         // Preguntar si quiere jugar de nuevo - B.7 Preguntar si quieres volver a jugar
         StartCoroutine(PreguntarNuevoJuegoCoroutine());
@@ -288,18 +374,47 @@ public class GameManagerTTS : MonoBehaviour
     {
         yield return new WaitForSeconds(tiempoEsperaEntreMensajes);
 
-        TTSManager.Instance.Speak("¿Quieres jugar otra vez? Responde Si o No.");
+        Debug.Log("[GameManagerTTS] Preguntando si quiere jugar otra vez");
 
-        // Esperar a que termine de hablar
-        while (TTSManager.Instance.IsSpeaking())
+        if (ttsPrepared)
         {
-            yield return null;
+            TTSManager.Instance.Speak("¿Quieres jugar otra vez? Responde Sí o No.");
+
+            // Esperar a que termine de hablar
+            while (TTSManager.Instance.IsSpeaking())
+            {
+                yield return null;
+            }
         }
 
         yield return new WaitForSeconds(tiempoEsperaEntreMensajes);
 
         // Reiniciar el reconocimiento para capturar la respuesta
+        Debug.Log("[GameManagerTTS] Iniciando reconocimiento para respuesta de nuevo juego");
+        Debug.Log($"[GameManagerTTS] Estado esperandoRespuestaNuevoJuego antes de iniciar reconocimiento: {esperandoRespuestaNuevoJuego}");
+
         speechRecognition.StartListening();
+
+        // Comprobar periódicamente si el reconocimiento se cancela
+        StartCoroutine(ComprobarReconocimientoCancelado());
+    }
+
+    private IEnumerator ComprobarReconocimientoCancelado()
+    {
+        // Esperar un poco antes de empezar a comprobar
+        yield return new WaitForSeconds(1.0f);
+
+        while (esperandoRespuestaNuevoJuego)
+        {
+            // Verificar si el reconocimiento se ha cancelado
+            if (speechRecognition.Status != SpeechSystemStatus.Running)
+            {
+                Debug.Log("[GameManagerTTS] Reconocimiento cancelado mientras se esperaba respuesta. Reiniciando...");
+                speechRecognition.StartListening();
+            }
+
+            yield return new WaitForSeconds(1.0f);
+        }
     }
 
     private void ProcesarRespuestaNuevoJuego(string respuesta)
@@ -307,40 +422,89 @@ public class GameManagerTTS : MonoBehaviour
         // Detener reconocimiento mientras procesamos
         speechRecognition.StopListening();
 
-        respuesta = respuesta.ToLower();
+        Debug.Log($"[GameManagerTTS] ProcesarRespuestaNuevoJuego - Respuesta: '{respuesta}'");
 
-        if (respuesta.Contains("si") || respuesta.Contains("sí") || respuesta == "s" || respuesta.Contains("vale"))
+        respuesta = respuesta.ToLower().Trim();
+
+        // Verificar la respuesta de manera simplificada
+        bool respuestaSi = respuesta.Contains("si") || respuesta.Contains("sí") || respuesta == "s";
+        bool respuestaNo = respuesta.Contains("no") || respuesta == "n";
+
+        Debug.Log($"[GameManagerTTS] Respuesta interpretada como: {(respuestaSi ? "SÍ" : (respuestaNo ? "NO" : "DESCONOCIDA"))}");
+
+        if (respuestaSi)
         {
-            // Reiniciar el juego
-            IniciarJuego();
+            Debug.Log("[GameManagerTTS] Se ha decidido reiniciar el juego");
+
+            if (ttsPrepared)
+            {
+                TTSManager.Instance.StopSpeaking();
+                TTSManager.Instance.Speak("De acuerdo, iniciando nuevo juego.");
+            }
+
+            // Reiniciar después de una breve pausa
+            if (reiniciarEscenaEnNuevoJuego)
+            {
+                // Reiniciar toda la escena
+                Invoke("ReiniciarEscena", 2.0f);
+            }
+            else
+            {
+                // Solo reiniciar la lógica
+                Invoke("ReiniciarJuegoDirecto", 2.0f);
+            }
         }
-        else if (respuesta.Contains("no") || respuesta == "n")
+        else if (respuestaNo)
         {
-            // Cerrar la aplicación
-            Debug.Log("Cerrando la aplicación");
+            Debug.Log("[GameManagerTTS] Se ha decidido finalizar el juego");
             StartCoroutine(CerrarAplicacion());
         }
         else
         {
-            // No se entendió la respuesta
-            Debug.Log("Respuesta no reconocida: " + respuesta);
+            Debug.Log("[GameManagerTTS] Respuesta no reconocida, volviendo a preguntar");
 
-            // Volver a preguntar
+            // Restablecer la variable por si acaso
+            esperandoRespuestaNuevoJuego = true;
+
             StartCoroutine(PreguntarNuevoJuegoCoroutine());
         }
     }
 
+    private void ReiniciarEscena()
+    {
+        Debug.Log("[GameManagerTTS] Reiniciando escena completa");
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    private void ReiniciarJuegoDirecto()
+    {
+        Debug.Log("[GameManagerTTS] Reiniciando lógica del juego");
+
+        // Resetear todas las variables de estado
+        esperandoRespuestaNuevoJuego = false;
+
+        // Iniciar un nuevo juego
+        IniciarJuego();
+    }
+
     private IEnumerator CerrarAplicacion()
     {
-        TTSManager.Instance.Speak("Gracias por jugar. Hasta pronto.");
+        Debug.Log("[GameManagerTTS] Preparando cierre de aplicación");
 
-        // Esperar a que termine de hablar
-        while (TTSManager.Instance.IsSpeaking())
+        if (ttsPrepared)
         {
-            yield return null;
+            TTSManager.Instance.Speak("Gracias por jugar. Hasta pronto.");
+
+            // Esperar a que termine de hablar
+            while (TTSManager.Instance.IsSpeaking())
+            {
+                yield return null;
+            }
         }
 
         yield return new WaitForSeconds(1f);
+
+        Debug.Log("[GameManagerTTS] Cerrando aplicación");
 
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;

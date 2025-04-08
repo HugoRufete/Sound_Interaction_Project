@@ -29,6 +29,19 @@ public class SpeechRecognitionManager : MonoBehaviour
         }
     }
 
+    // Propiedad para obtener el estado actual del reconocimiento de voz
+    public SpeechSystemStatus Status
+    {
+        get
+        {
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+            return dictationRecognizer != null ? dictationRecognizer.Status : SpeechSystemStatus.Stopped;
+#else
+            return SpeechSystemStatus.Stopped;
+#endif
+        }
+    }
+
     private void Awake()
     {
         if (_instance != null && _instance != this)
@@ -53,29 +66,68 @@ public class SpeechRecognitionManager : MonoBehaviour
         dictationRecognizer.DictationResult += (text, confidence) =>
         {
             Debug.Log($"Dictado reconocido: {text} (confianza: {confidence})");
-            OnSpeechRecognized?.Invoke(text);
+
+            // Debug adicional para verificar si se está disparando el evento
+            Debug.Log($"[DEBUG SpeechRecognition] Enviando evento OnSpeechRecognized con texto: '{text}'");
+
+            // Asegurarnos de que hay suscriptores antes de invocar
+            if (OnSpeechRecognized != null)
+            {
+                OnSpeechRecognized.Invoke(text);
+            }
+            else
+            {
+                Debug.LogError("[ERROR] No hay suscriptores al evento OnSpeechRecognized");
+            }
         };
 
         dictationRecognizer.DictationComplete += (completionCause) =>
         {
             // Si se detiene por alguna razón, podemos reiniciarlo
-            if (isListening)
-            {
-                dictationRecognizer.Start();
-            }
-
             Debug.Log($"Dictado completado: {completionCause}");
+
+            if (isListening && completionCause != DictationCompletionCause.Complete)
+            {
+                Debug.Log("Reiniciando reconocimiento automáticamente después de completarse.");
+                StartCoroutine(ReiniciarReconocimiento(0.5f));
+            }
         };
 
         dictationRecognizer.DictationError += (error, hresult) =>
         {
             Debug.LogError($"Error de dictado: {error}");
+
+            // Intentar reiniciar en caso de error
+            if (isListening)
+            {
+                Debug.Log("Intentando reiniciar reconocimiento después de error.");
+                StartCoroutine(ReiniciarReconocimiento(1.0f));
+            }
         };
 
         Debug.Log("Sistema de dictado inicializado");
 #else
         Debug.LogWarning("El reconocimiento de voz nativo de Windows solo está disponible en plataformas Windows");
 #endif
+    }
+
+    /// <summary>
+    /// Corrutina para reiniciar el reconocimiento después de un delay
+    /// </summary>
+    private IEnumerator ReiniciarReconocimiento(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (isListening)
+        {
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+            if (dictationRecognizer != null && dictationRecognizer.Status != SpeechSystemStatus.Running)
+            {
+                Debug.Log("Reiniciando reconocimiento de voz tras delay...");
+                dictationRecognizer.Start();
+            }
+#endif
+        }
     }
 
     /// <summary>

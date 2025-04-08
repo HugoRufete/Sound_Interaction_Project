@@ -536,7 +536,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 910499814}
-  - component: {fileID: 910499813}
   m_Layer: 0
   m_Name: '||GAME MANAGER||'
   m_TagString: Untagged
@@ -544,37 +543,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &910499813
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 910499812}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 98993cc5b1aceba428e8d97d0b40a19f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  audioSource: {fileID: 1999500446}
-  introClip: {fileID: 8300000, guid: bde4e3065375ac845b36d4ec059c329e, type: 3}
-  clipMayor: {fileID: 8300000, guid: 25e697e84d7a2564ab8e1a6735f8ee1e, type: 3}
-  clipMenor: {fileID: 8300000, guid: 13da2342c1f56524581816d4e8f27a44, type: 3}
-  clipVictoria: {fileID: 8300000, guid: fc7a63250250a1845bf68278d68cdcc2, type: 3}
-  clipDerrota: {fileID: 8300000, guid: e5bc3c780be1f34419d8803e6f0e8bbf, type: 3}
-  clipNumeroInvalido: {fileID: 8300000, guid: 480a30443f46e154a9109ce814ae8921, type: 3}
-  clipNumeroRepetido: {fileID: 8300000, guid: c6ef91422d86f9849adb0688b8e9f4a6, type: 3}
-  clipIntentos: {fileID: 8300000, guid: 48a55391d9f3a9e4f8edf66d60e54f99, type: 3}
-  clipNuevoJuego: {fileID: 8300000, guid: bde4e3065375ac845b36d4ec059c329e, type: 3}
-  clipsNumeros:
-  - {fileID: 8300000, guid: c62a32280b9120a45917e68b328be073, type: 3}
-  - {fileID: 8300000, guid: 6207bd1a9ac0fdb47bb42ad3571c2350, type: 3}
-  - {fileID: 8300000, guid: 0292e7ed4234026449addb114531b305, type: 3}
-  - {fileID: 8300000, guid: b04b01ef40cedd3468ad4bf52d7b3912, type: 3}
-  - {fileID: 8300000, guid: 9a994d37402128941abe1abf8aa2f436, type: 3}
-  numeroMinimo: 0
-  numeroMaximo: 100
-  intentosMaximos: 5
 --- !u!4 &910499814
 Transform:
   m_ObjectHideFlags: 0
@@ -691,7 +659,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1619731969}
   - component: {fileID: 1619731972}
-  - component: {fileID: 1619731971}
   - component: {fileID: 1619731970}
   m_Layer: 0
   m_Name: '||TEX TO SPEECH||'
@@ -729,26 +696,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   voiceName: Microsoft Helena Desktop
   voiceRate: 0
-  voiceVolume: 100
+  voiceVolume: 50
   debugLog: 1
---- !u!114 &1619731971
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1619731968}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aff32e8141b9c264d9493ecc2348f5b4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  apiKey: TU_API_KEY
-  languageCode: es-ES
-  recordingTime: 5
-  sampleRate: 16000
-  singleWordMode: 1
-  autoStart: 0
 --- !u!114 &1619731972
 MonoBehaviour:
   m_ObjectHideFlags: 0
