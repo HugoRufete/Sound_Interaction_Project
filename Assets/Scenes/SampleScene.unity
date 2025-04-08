@@ -154,6 +154,7 @@ Transform:
   - {fileID: 910499814}
   - {fileID: 1500801285}
   - {fileID: 1450104903}
+  - {fileID: 1619731969}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &460990877
@@ -563,13 +564,14 @@ MonoBehaviour:
   clipDerrota: {fileID: 8300000, guid: e5bc3c780be1f34419d8803e6f0e8bbf, type: 3}
   clipNumeroInvalido: {fileID: 8300000, guid: 480a30443f46e154a9109ce814ae8921, type: 3}
   clipNumeroRepetido: {fileID: 8300000, guid: c6ef91422d86f9849adb0688b8e9f4a6, type: 3}
-  clipIntentos: {fileID: 8300000, guid: f4742523d187dc8439717f22517016a7, type: 3}
+  clipIntentos: {fileID: 8300000, guid: 48a55391d9f3a9e4f8edf66d60e54f99, type: 3}
   clipNuevoJuego: {fileID: 8300000, guid: bde4e3065375ac845b36d4ec059c329e, type: 3}
   clipsNumeros:
   - {fileID: 8300000, guid: c62a32280b9120a45917e68b328be073, type: 3}
-  - {fileID: 8300000, guid: 4391b68e5f931824d893a501220d779e, type: 3}
-  - {fileID: 8300000, guid: 628125587c1ef4b4398e93021fc9cac0, type: 3}
-  - {fileID: 8300000, guid: f4742523d187dc8439717f22517016a7, type: 3}
+  - {fileID: 8300000, guid: 6207bd1a9ac0fdb47bb42ad3571c2350, type: 3}
+  - {fileID: 8300000, guid: 0292e7ed4234026449addb114531b305, type: 3}
+  - {fileID: 8300000, guid: b04b01ef40cedd3468ad4bf52d7b3912, type: 3}
+  - {fileID: 8300000, guid: 9a994d37402128941abe1abf8aa2f436, type: 3}
   numeroMinimo: 0
   numeroMaximo: 100
   intentosMaximos: 5
@@ -679,6 +681,91 @@ Transform:
   m_Children: []
   m_Father: {fileID: 133807543}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1619731968
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1619731969}
+  - component: {fileID: 1619731972}
+  - component: {fileID: 1619731971}
+  - component: {fileID: 1619731970}
+  m_Layer: 0
+  m_Name: '||TEX TO SPEECH||'
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1619731969
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1619731968}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 133807543}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1619731970
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1619731968}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9c4937b093681743b267992c88a94e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  voiceName: Microsoft Helena Desktop
+  voiceRate: 0
+  voiceVolume: 100
+  debugLog: 1
+--- !u!114 &1619731971
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1619731968}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aff32e8141b9c264d9493ecc2348f5b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  apiKey: TU_API_KEY
+  languageCode: es-ES
+  recordingTime: 5
+  sampleRate: 16000
+  singleWordMode: 1
+  autoStart: 0
+--- !u!114 &1619731972
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1619731968}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbbb622a97981894e8b0158350424ef1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  numeroMinimo: 0
+  numeroMaximo: 100
+  intentosMaximos: 5
+  tiempoEsperaEntreMensajes: 0.5
+  mostrarNumeroSecreto: 1
 --- !u!1 &1999500445
 GameObject:
   m_ObjectHideFlags: 0
