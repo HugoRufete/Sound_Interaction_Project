@@ -7,14 +7,17 @@ public class GameManager : MonoBehaviour
     [Header("Configuración")]
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip introClip; // Audio grabado para instrucciones iniciales
-    [SerializeField] private AudioClip clipMayor; // Audio para "Mayor"
-    [SerializeField] private AudioClip clipMenor; // Audio para "Menor"
+    [SerializeField] private AudioClip clipMayor; // Audio para "Mayor, te quedan"
+    [SerializeField] private AudioClip clipMenor; // Audio para "Menor, te quedan"
     [SerializeField] private AudioClip clipVictoria; // Audio para victoria
     [SerializeField] private AudioClip clipDerrota; // Audio para derrota
     [SerializeField] private AudioClip clipNumeroInvalido; // Audio para número inválido
     [SerializeField] private AudioClip clipNumeroRepetido; // Audio para número repetido
-    [SerializeField] private AudioClip clipIntentos; // Audio para "Te quedan X intentos"
+    [SerializeField] private AudioClip clipIntentos; // Audio para "intentos restantes"
     [SerializeField] private AudioClip clipNuevoJuego; // Audio para preguntar si quiere jugar de nuevo
+
+    [Header("Clips para Números")]
+    [SerializeField] private AudioClip[] clipsNumeros; // Array de clips para números (0-5)
 
     [Header("Ajustes del Juego")]
     [SerializeField] private int numeroMinimo = 0;
@@ -192,19 +195,19 @@ public class GameManager : MonoBehaviour
         {
             // El número es mayor - B.4 El ordenador responderá con "Mayor" o "Menor" y "Te quedan XXX intentos"
             string mensaje = $"Mayor. Te quedan {intentosRestantes} intentos.";
-            ReproducirMensaje(clipMayor, mensaje);
+            StartCoroutine(ReproducirSecuenciaIntentos(true));
 
             // Volver a escuchar tras reproducir el mensaje
-            StartCoroutine(ReiniciarEscucha(2f));
+            StartCoroutine(ReiniciarEscucha(4f)); // Aumentamos el tiempo para la secuencia completa
         }
         else
         {
             // El número es menor - B.4 El ordenador responderá con "Mayor" o "Menor" y "Te quedan XXX intentos"
             string mensaje = $"Menor. Te quedan {intentosRestantes} intentos.";
-            ReproducirMensaje(clipMenor, mensaje);
+            StartCoroutine(ReproducirSecuenciaIntentos(false));
 
             // Volver a escuchar tras reproducir el mensaje
-            StartCoroutine(ReiniciarEscucha(2f));
+            StartCoroutine(ReiniciarEscucha(4f)); // Aumentamos el tiempo para la secuencia completa
         }
     }
 
@@ -284,6 +287,58 @@ public class GameManager : MonoBehaviour
         else
         {
             Debug.LogWarning($"No hay clip de audio asignado para: '{mensajeAlternativo}'. Debería crear estos audios y asignarlos al GameManager.");
+        }
+    }
+
+    /// <summary>
+    /// Reproduce una secuencia de audios: "Mayor/Menor, te quedan" + número + "intentos restantes"
+    /// </summary>
+    private IEnumerator ReproducirSecuenciaIntentos(bool esMayor)
+    {
+        AudioClip clipRespuesta = esMayor ? clipMayor : clipMenor;
+
+        // 1. Reproducir "Mayor/Menor, te quedan"
+        if (clipRespuesta != null)
+        {
+            audioSource.clip = clipRespuesta;
+            audioSource.Play();
+
+            // Esperar a que termine el audio
+            yield return new WaitForSeconds(audioSource.clip.length);
+        }
+        else
+        {
+            Debug.LogWarning($"No hay clip de audio asignado para: '{(esMayor ? "Mayor" : "Menor")}, te quedan'");
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        // 2. Reproducir el número de intentos restantes
+        if (clipsNumeros != null && intentosRestantes >= 0 && intentosRestantes < clipsNumeros.Length && clipsNumeros[intentosRestantes] != null)
+        {
+            audioSource.clip = clipsNumeros[intentosRestantes];
+            audioSource.Play();
+
+            // Esperar a que termine el audio
+            yield return new WaitForSeconds(audioSource.clip.length);
+        }
+        else
+        {
+            Debug.LogWarning($"No hay clip de audio asignado para el número: {intentosRestantes}");
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        // 3. Reproducir "intentos restantes"
+        if (clipIntentos != null)
+        {
+            audioSource.clip = clipIntentos;
+            audioSource.Play();
+
+            // Esperar a que termine el audio
+            yield return new WaitForSeconds(audioSource.clip.length);
+        }
+        else
+        {
+            Debug.LogWarning("No hay clip de audio asignado para: 'intentos restantes'");
         }
     }
 }

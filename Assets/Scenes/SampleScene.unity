@@ -557,14 +557,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   audioSource: {fileID: 1999500446}
   introClip: {fileID: 8300000, guid: bde4e3065375ac845b36d4ec059c329e, type: 3}
-  clipMayor: {fileID: 8300000, guid: c62a32280b9120a45917e68b328be073, type: 3}
-  clipMenor: {fileID: 8300000, guid: 4391b68e5f931824d893a501220d779e, type: 3}
-  clipVictoria: {fileID: 0}
-  clipDerrota: {fileID: 0}
-  clipNumeroInvalido: {fileID: 8300000, guid: c62a32280b9120a45917e68b328be073, type: 3}
-  clipNumeroRepetido: {fileID: 8300000, guid: 628125587c1ef4b4398e93021fc9cac0, type: 3}
+  clipMayor: {fileID: 8300000, guid: 25e697e84d7a2564ab8e1a6735f8ee1e, type: 3}
+  clipMenor: {fileID: 8300000, guid: 13da2342c1f56524581816d4e8f27a44, type: 3}
+  clipVictoria: {fileID: 8300000, guid: fc7a63250250a1845bf68278d68cdcc2, type: 3}
+  clipDerrota: {fileID: 8300000, guid: e5bc3c780be1f34419d8803e6f0e8bbf, type: 3}
+  clipNumeroInvalido: {fileID: 8300000, guid: 480a30443f46e154a9109ce814ae8921, type: 3}
+  clipNumeroRepetido: {fileID: 8300000, guid: c6ef91422d86f9849adb0688b8e9f4a6, type: 3}
   clipIntentos: {fileID: 8300000, guid: f4742523d187dc8439717f22517016a7, type: 3}
-  clipNuevoJuego: {fileID: 0}
+  clipNuevoJuego: {fileID: 8300000, guid: bde4e3065375ac845b36d4ec059c329e, type: 3}
+  clipsNumeros:
+  - {fileID: 8300000, guid: c62a32280b9120a45917e68b328be073, type: 3}
+  - {fileID: 8300000, guid: 4391b68e5f931824d893a501220d779e, type: 3}
+  - {fileID: 8300000, guid: 628125587c1ef4b4398e93021fc9cac0, type: 3}
+  - {fileID: 8300000, guid: f4742523d187dc8439717f22517016a7, type: 3}
   numeroMinimo: 0
   numeroMaximo: 100
   intentosMaximos: 5
